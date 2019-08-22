@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bitsperbyte/xor"
 	"encoding/hex"
 	"fmt"
 )
@@ -26,21 +27,11 @@ func main() {
 	textIn := `Burning 'em, if you ain't quick and nimble
 I go crazy when I hear a cymbal`
 
-	textOut := xorBytes([]byte(textIn), []byte("ICE"))
+	textOut := xor.Encode([]byte(textIn), []byte("ICE"))
 
 	candidate := hex.EncodeToString(textOut)
 	fmt.Printf("%s\n", candidate)
 	if candidate == answer {
 		fmt.Printf("Passed\n")
 	}
-}
-
-func xorBytes(text []byte, key []byte) []byte {
-	returnText := make([]byte, len(text))
-	lkey := len(key)
-
-	for i, textByte := range text {
-		returnText[i] = textByte ^ key[i%lkey]
-	}
-	return returnText
 }
