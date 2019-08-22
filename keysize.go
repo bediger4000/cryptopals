@@ -35,7 +35,7 @@ func compareSubBuffers(keyLength int, buffer []byte) (int, int) {
 	bufferComparisons := 0
 	commonBitsCount := 0
 	comparisonBuffer := buffer[0:keyLength]
-	for j := keyLength + 1; j < bufferLength; j += keyLength {
+	for j := keyLength; j < bufferLength; j += keyLength {
 		xoredSubBuffer := xor.Encode(comparisonBuffer, buffer[j:j+keyLength])
 		commonBitsCount += xor.CountBits(xoredSubBuffer)
 		bufferComparisons++
