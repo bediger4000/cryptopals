@@ -9,7 +9,7 @@ var FrequencyIndex = map[rune]int{
 	' ': 0,
 	'e': 1,
 	't': 2,
-
+	// Punctuation (grouped) said to fit here
 	'a': 4,
 	'o': 5,
 	'i': 6,
@@ -36,12 +36,14 @@ var FrequencyIndex = map[rune]int{
 	'z': 27,
 }
 
+// English letter frequencies from Wikipedia
 var EnglishLetterVector = map[byte]int{
 	byte('a'): 8167,
 	byte('b'): 1492,
 	byte('c'): 2782,
 	byte('d'): 4253,
 	byte('e'): 12702,
+	byte(' '): 13000,
 	byte('f'): 2228,
 	byte('g'): 2015,
 	byte('h'): 6094,
@@ -65,6 +67,9 @@ var EnglishLetterVector = map[byte]int{
 	byte('z'): 74,
 }
 
+// English ASCII character frequencies obtained
+// by concatening many text files, then counting
+// all the byte frequencies.
 var AsciiLetterVector = map[byte]int{
 	byte(0x09): 209,
 	byte(0x0a): 2989,
@@ -164,6 +169,9 @@ var AsciiLetterVector = map[byte]int{
 	byte(0xe2): 3,
 }
 
+// I think this one is incorrect: it does not use
+// ' ' counts or any control characters ('\n', '\t')
+// that might get counted.
 func VectorAngle(vec1, vec2 map[byte]int) float64 {
 
 	var sum1, sum2 int64
@@ -222,15 +230,24 @@ func NewAsciiByteVector(cleartext []byte) map[byte]int {
 
 	return clearVector
 }
+
 func AsciiVectorAngle(vec1, vec2 map[byte]int) float64 {
 
 	var sum1, sum2 int64
 	var dotProduct int64
-	for keyByte, count := range vec1 {
-		b := byte(keyByte)
-		dotProduct += int64(count * vec2[b])
-		sum1 += int64(count * count)
-		sum2 += int64(vec2[b] * vec2[b])
+	for i := 0; i < 256; i++ {
+		b := byte(i)
+		c1, ok := vec1[b]
+		if !ok {
+			c1 = 0
+		}
+		c2, ok := vec2[b]
+		if !ok {
+			c2 = 0
+		}
+		dotProduct += int64(c1 * c2)
+		sum1 += int64(c1 * c1)
+		sum2 += int64(c2 * c2)
 	}
 	return math.Acos(float64(dotProduct) / math.Sqrt(float64(sum1*sum2)))
 }
