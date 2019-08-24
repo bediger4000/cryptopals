@@ -25,7 +25,7 @@ SUBMARINE" with an IV of all ASCII 0 (\x00\x00\x00 &c)
 import (
 	"bitsperbyte/xor"
 	"crypto/aes"
-	"cryptopals/blocks"
+	"cryptopals/pkcs7"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -40,34 +40,26 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Fprintf(os.Stderr, "%d bytes cleartext\n", len(bytes))
 
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if len(bytes)%aes.BlockSize != 0 {
-		fmt.Fprintf(os.Stderr, "ciphertext length %d is not a multiple of the block size\n", len(bytes))
+	paddedBuffer := pkcs7.PadBlock(bytes, aes.BlockSize)
+
+	if len(paddedBuffer)%aes.BlockSize != 0 {
+		fmt.Fprintf(os.Stderr, "padded cleartext length %d is not a multiple of the block size\n", len(bytes))
 	}
 
-	fmt.Fprintf(os.Stderr, "Allocating %d bytes for encrypted bytes\n", len(bytes)+(aes.BlockSize-len(bytes)%aes.BlockSize))
-	dst := make([]byte, len(bytes)+(aes.BlockSize-len(bytes)%aes.BlockSize))
+	dst := make([]byte, len(paddedBuffer))
 
 	// all 0x00 initialization vector
 	previousBlock := make([]byte, aes.BlockSize)
 
-	var i int
-	for i = 0; i < len(bytes); i += aes.BlockSize {
-		block.Encrypt(dst[i:i+aes.BlockSize], xor.Encode(bytes[i:i+aes.BlockSize], previousBlock))
-		copy(previousBlock, dst[i:i+aes.BlockSize])
-	}
-
-	if i != len(bytes) {
-		bytesEncrypted := i - aes.BlockSize
-		fmt.Fprintf(os.Stderr, "Encrypted %d bytes\n", bytesEncrypted)
-		paddedBytes := blocks.Pkcs7Pad(bytes[bytesEncrypted:], aes.BlockSize)
-		block.Encrypt(dst[bytesEncrypted:], xor.Encode(paddedBytes[:], previousBlock))
+	for i := 0; i < len(bytes); i += aes.BlockSize {
+		block.Encrypt(dst[i:i+aes.BlockSize], xor.Encode(paddedBuffer[i:i+aes.BlockSize], previousBlock))
+		previousBlock = dst[i : i+aes.BlockSize]
 	}
 
 	base64text := base64.StdEncoding.EncodeToString(dst)
