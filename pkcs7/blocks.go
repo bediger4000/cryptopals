@@ -1,5 +1,10 @@
 package pkcs7
 
+import (
+	"fmt"
+	"os"
+)
+
 /*
 func main() {
 	N, err := strconv.Atoi(os.Args[1])
@@ -29,10 +34,11 @@ func main() {
 // a buffer previously padded as per PKCS#7.
 // The front of the input buffer comes back.
 func TrimBuffer(buffer []byte) []byte {
-	length := len(buffer)
+	bufferLength := len(buffer)
 	// PKCS#7 pad bytes value also count of pad bytes
-	trimCount := int(buffer[length-1])
-	return buffer[:length-trimCount]
+	trimCount := int(buffer[bufferLength-1])
+	fmt.Fprintf(os.Stderr, "TrimBuffer() chopping off %d bytes of value %d\n", trimCount, buffer[bufferLength-1])
+	return buffer[:bufferLength-trimCount]
 }
 
 // PadBlock composes a new buffer that's a multiple
@@ -41,19 +47,17 @@ func TrimBuffer(buffer []byte) []byte {
 // Final bytes (up to a whole block) comprise padding, with byte
 // value of the number of padded bytes.
 func PadBlock(buffer []byte, blocksize int) []byte {
-	paddedBlockCount := len(buffer)/blocksize + 1
-	spareByteCount := len(buffer) % blocksize
+	bufferLength := len(buffer)
+	paddedBlockCount := bufferLength/blocksize + 1
+	spareByteCount := bufferLength % blocksize
 	fillInByteCount := blocksize - spareByteCount
 
 	paddedBuffer := make([]byte, paddedBlockCount*blocksize)
 
 	copy(paddedBuffer, buffer)
 
-	// padBuffer a slice of paddedBuffer, so
-	// paddedBuffer changes when padBuffer[i] get assigned to
-	padBuffer := paddedBuffer[len(buffer):]
 	for i := 0; i < fillInByteCount; i++ {
-		padBuffer[i] = byte(fillInByteCount)
+		paddedBuffer[bufferLength+i] = byte(fillInByteCount)
 	}
 
 	return paddedBuffer
