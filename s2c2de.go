@@ -25,6 +25,7 @@ SUBMARINE" with an IV of all ASCII 0 (\x00\x00\x00 &c)
 import (
 	"bitsperbyte/xor"
 	"crypto/aes"
+	"cryptopals/pkcs7"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -50,22 +51,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if len(bytes)%aes.BlockSize != 0 {
+	bytesLen := len(bytes)
+	if bytesLen%aes.BlockSize != 0 {
+		// It's ok to panic here, bytes[] should have length
+		// a multiple of block size.
 		panic("ciphertext is not a multiple of the block size")
 	}
 
-	dst := make([]byte, len(bytes))
-	dummyBlock := make([]byte, aes.BlockSize)
+	dst := make([]byte, bytesLen)
+	dummyBlock := make([]byte, aes.BlockSize) // Initialization vector
 	lastBlock := make([]byte, aes.BlockSize)
 
-	for i := 0; i < len(bytes); i += aes.BlockSize {
+	for i := 0; i < bytesLen; i += aes.BlockSize {
 		block.Decrypt(dummyBlock, bytes[i:i+aes.BlockSize])
-
 		copy(dst[i:i+aes.BlockSize], xor.Encode(dummyBlock, lastBlock))
-		copy(lastBlock, bytes[i:i+aes.BlockSize])
+		lastBlock = bytes[i : i+aes.BlockSize]
 	}
 
-	n, err := os.Stdout.Write(dst)
+	trimmed := pkcs7.TrimBuffer(dst)
+
+	n, err := os.Stdout.Write(trimmed)
 	if err != nil {
 		log.Fatal(err)
 	}
