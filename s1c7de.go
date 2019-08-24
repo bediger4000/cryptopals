@@ -16,6 +16,7 @@ Easiest way: use OpenSSL::Cipher and give it AES-128-ECB as the cipher.
 
 import (
 	"crypto/aes"
+	"cryptopals/pkcs7"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -51,7 +52,7 @@ func main() {
 		block.Decrypt(dst[i:i+aes.BlockSize], bytes[i:i+aes.BlockSize])
 	}
 
-	n, err := os.Stdout.Write(dst)
+	n, err := os.Stdout.Write(pkcs7.TrimBuffer(dst))
 	if err != nil {
 		log.Fatal(err)
 	}

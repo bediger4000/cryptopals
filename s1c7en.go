@@ -2,7 +2,7 @@ package main
 
 import (
 	"crypto/aes"
-	"cryptopals/blocks"
+	"cryptopals/pkcs7"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -24,23 +24,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if len(bytes)%aes.BlockSize != 0 {
-		fmt.Fprintf(os.Stderr, "ciphertext length %d is not a multiple of the block size\n", len(bytes))
-	}
+	paddedBytes := pkcs7.PadBlock(bytes, aes.BlockSize)
 
-	fmt.Fprintf(os.Stderr, "Allocating %d bytes for encrypted bytes\n", len(bytes)+(aes.BlockSize-len(bytes)%aes.BlockSize))
-	dst := make([]byte, len(bytes)+(aes.BlockSize-len(bytes)%aes.BlockSize))
+	fmt.Fprintf(os.Stderr, "Allocating %d bytes for encrypted bytes\n", len(paddedBytes))
+	dst := make([]byte, len(paddedBytes))
 
 	var i int
 	for i = 0; i < len(bytes); i += aes.BlockSize {
-		block.Encrypt(dst[i:i+aes.BlockSize], bytes[i:i+aes.BlockSize])
-	}
-
-	if i != len(bytes) {
-		bytesEncrypted := i - aes.BlockSize
-		fmt.Fprintf(os.Stderr, "Encrypted %d bytes\n", bytesEncrypted)
-		paddedBytes := blocks.Pkcs7Pad(bytes[bytesEncrypted:], aes.BlockSize)
-		block.Encrypt(dst[bytesEncrypted:], paddedBytes[:])
+		block.Encrypt(dst[i:i+aes.BlockSize], paddedBytes[i:i+aes.BlockSize])
 	}
 
 	base64text := base64.StdEncoding.EncodeToString(dst)
