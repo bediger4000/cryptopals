@@ -1,10 +1,5 @@
 package pkcs7
 
-import (
-	"fmt"
-	"os"
-)
-
 /*
 func main() {
 	N, err := strconv.Atoi(os.Args[1])
@@ -37,7 +32,6 @@ func TrimBuffer(buffer []byte) []byte {
 	bufferLength := len(buffer)
 	// PKCS#7 pad bytes value also count of pad bytes
 	trimCount := int(buffer[bufferLength-1])
-	fmt.Fprintf(os.Stderr, "TrimBuffer() chopping off %d bytes of value %d\n", trimCount, buffer[bufferLength-1])
 	return buffer[:bufferLength-trimCount]
 }
 
