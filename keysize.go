@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitsperbyte/xor"
+	"cryptopals/xor"
 	"flag"
 	"fmt"
 	"io/ioutil"

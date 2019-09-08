@@ -23,9 +23,9 @@ SUBMARINE" with an IV of all ASCII 0 (\x00\x00\x00 &c)
 */
 
 import (
-	"bitsperbyte/xor"
 	"crypto/aes"
 	"cryptopals/pkcs7"
+	"cryptopals/xor"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"

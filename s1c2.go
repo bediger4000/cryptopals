@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitsperbyte/xor"
+	"cryptopals/xor"
 	"encoding/hex"
 	"fmt"
 	"log"
