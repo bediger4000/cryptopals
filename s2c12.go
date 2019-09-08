@@ -17,11 +17,11 @@ func main() {
 	keyString := flag.String("k", "YELLOW SUBMARINE", "AES key")
 	flag.Parse()
 
-	// encodedString := `Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK`
+	encodedString := `Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK`
 	// encodedString := `bm93IGlzIHRoZSB0aW1lIGZvciBhbGwgZ29vZCBtZW4K`
 	// encodedString := `YWJjZGVmZ2hpamtsbW5vcAo=`
 	// encodedString := `YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=`
-	encodedString := `YWJjZGVmZ2hpamtsb21ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OUFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFla`
+	// encodedString := `YWJjZGVmZ2hpamtsb21ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OUFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFla`
 
 	unknownString, err := base64.StdEncoding.DecodeString(encodedString)
 	if err != nil {
@@ -43,6 +43,8 @@ func main() {
 
 func findUnencryptedBytes(cipher func([]byte, []byte) []byte, blockLength int, key []byte, unknownString []byte) {
 	var decipheredBytes []byte
+
+	encryptedOriginal := cipher(unknownString, key)
 
 	blockCount := len(cipher(unknownString, key)) / blockLength
 
@@ -93,6 +95,11 @@ func findUnencryptedBytes(cipher func([]byte, []byte) []byte, blockLength int, k
 				return
 			}
 			fmt.Printf("Decrypted so far: %q\n", string(decipheredBytes))
+			encryptedTest := cipher(decipheredBytes, key)
+			if xor.CompareBuffers(encryptedTest, encryptedOriginal) {
+				fmt.Printf("Found it:\n%s\n", string(decipheredBytes))
+				return
+			}
 		}
 	}
 }
